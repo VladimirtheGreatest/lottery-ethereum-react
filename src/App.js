@@ -8,6 +8,7 @@ class App extends React.Component {
     manager: "",
     players: [],
     balance: "",
+    value: "",
   };
   async componentDidMount() {
     const manager = await lottery.methods.manager().call();
@@ -15,6 +16,17 @@ class App extends React.Component {
     const balance = await web3.eth.getBalance(lottery.options.address);
     this.setState({ manager, players, balance });
   }
+  //we dont need to worry about the value of this
+  onSubmit = async (event) => {
+    event.preventDefault();
+
+    const accounts = await web3.eth.getAccounts();
+
+    await lottery.methods.enter().send({
+      from: accounts[0],
+      value: web3.utils.toWei(this.state.value, "ether"),
+    });
+  };
   render() {
     return (
       <div>
@@ -25,6 +37,18 @@ class App extends React.Component {
           competing to win {web3.utils.fromWei(this.state.balance, "ether")}{" "}
           ether!
         </p>
+        <hr></hr>
+        <form onSubmit={this.onSubmit}>
+          <h4>Want to try your luck?</h4>
+          <div>
+            <label>Amount of ether to enter</label>
+            <input
+              value={this.state.value}
+              onChange={(event) => this.setState({ value: event.target.value })}
+            ></input>
+          </div>
+          <button>Enter</button>
+        </form>
       </div>
     );
   }
